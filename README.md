@@ -81,8 +81,7 @@ production** dans *Paramètres > Sécurité*) :
 - **Consultation** : lecture seule sur l'ensemble de l'application.
 
 Les permissions sont vérifiées **côté serveur** (décorateur `role_required`),
-pas seulement en masquant des boutons côté interface.
-
+pas seulement en masquant des boutons côté interface.ces
 ## Fonctionnalités principales
 
 - Authentification sécurisée (mots de passe hashés, protection CSRF)
