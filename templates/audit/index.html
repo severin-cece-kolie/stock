@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Historique{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="font-h1 text-h1 text-on-background mb-1">Historique & Journal d'activité</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">Toutes les opérations importantes effectuées sur l'application.</p>
+  </div>
+  <a href="{% url 'audit:export_csv' %}" class="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-medium hover:bg-surface-container-low transition-colors shadow-sm">
+    <span class="material-symbols-outlined text-lg">download</span> Exporter CSV
+  </a>
+</div>
+
+<form method="get" class="flex flex-col md:flex-row gap-3 mb-6">
+  <div class="relative flex-1">
+    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+    <input name="q" value="{{ query }}" class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:border-secondary focus:ring-1 focus:ring-secondary transition-all outline-none" placeholder="Rechercher dans les descriptions..." type="text"/>
+  </div>
+  <select name="module" onchange="this.form.submit()" class="w-full md:w-56 pl-4 pr-10 py-2 bg-background border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface appearance-none focus:border-secondary focus:ring-1 focus:ring-secondary outline-none cursor-pointer">
+    <option value="">Tous les modules</option>
+    {% for m in modules %}
+    <option value="{{ m }}" {% if selected_module == m %}selected{% endif %}>{{ m }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-medium hover:bg-surface-container-low transition-colors">Filtrer</button>
+</form>
+
+<div class="bg-surface-container-lowest border border-surface-variant shadow-[0_1px_3px_rgba(0,0,0,0.05)] rounded-lg overflow-hidden">
+  <div class="overflow-x-auto w-full">
+    <table class="w-full text-left border-collapse">
+      <thead class="bg-surface-container-low">
+        <tr>
+          <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase border-b border-surface-variant">Date & Heure</th>
+          <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase border-b border-surface-variant">Utilisateur</th>
+          <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase border-b border-surface-variant">Action</th>
+          <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase border-b border-surface-variant">Module</th>
+          <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant uppercase border-b border-surface-variant">Détails</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-variant text-body-sm">
+        {% for log in logs %}
+        <tr class="hover:bg-secondary-fixed/40 transition-colors">
+          <td class="py-3 px-4 font-data-mono text-data-mono text-on-surface-variant whitespace-nowrap">{{ log.timestamp|date:"d/m/Y H:i" }}</td>
+          <td class="py-3 px-4">{{ log.user|default:"Système" }}</td>
+          <td class="py-3 px-4 font-medium">{{ log.action }}</td>
+          <td class="py-3 px-4 text-on-surface-variant">{{ log.module }}</td>
+          <td class="py-3 px-4 text-on-surface-variant">{{ log.description }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="py-10 text-center text-on-surface-variant">Aucune activité enregistrée pour le moment.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

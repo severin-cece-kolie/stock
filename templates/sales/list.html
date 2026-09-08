@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Ventes{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="font-h1 text-h1 text-on-background mb-1">Ventes</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">Suivez vos transactions et votre chiffre d'affaires.</p>
+  </div>
+  {% if can_manage %}
+  <a href="{% url 'sales:new' %}" class="flex items-center gap-2 px-4 py-2 bg-primary-container text-on-primary rounded-lg font-body-sm text-body-sm hover:opacity-90 transition-opacity shadow-sm">
+    <span class="material-symbols-outlined text-sm">add</span> Nouvelle vente
+  </a>
+  {% endif %}
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-8">
+  <div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col justify-between h-32">
+    <div class="flex justify-between items-start">
+      <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Ventes aujourd'hui</span>
+      <div class="p-2 bg-surface-container-low rounded-lg text-secondary"><span class="material-symbols-outlined text-sm">today</span></div>
+    </div>
+    <div class="font-h2 text-h2 text-on-surface">{{ kpis.today_count }}</div>
+  </div>
+  <div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col justify-between h-32">
+    <div class="flex justify-between items-start">
+      <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Ventes ce mois</span>
+      <div class="p-2 bg-surface-container-low rounded-lg text-secondary"><span class="material-symbols-outlined text-sm">calendar_month</span></div>
+    </div>
+    <div class="font-h2 text-h2 text-on-surface">{{ kpis.month_count }}</div>
+  </div>
+  <div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col justify-between h-32">
+    <div class="flex justify-between items-start">
+      <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Chiffre d'affaires</span>
+      <div class="p-2 bg-surface-container-low rounded-lg text-tertiary-container"><span class="material-symbols-outlined text-sm">account_balance_wallet</span></div>
+    </div>
+    <div class="font-h2 text-h2 text-on-surface font-data-mono">{{ kpis.revenue|floatformat:0 }} {{ company_currency }}</div>
+  </div>
+  <div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col justify-between h-32">
+    <div class="flex justify-between items-start">
+      <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Transactions</span>
+      <div class="p-2 bg-surface-container-low rounded-lg text-secondary"><span class="material-symbols-outlined text-sm">receipt_long</span></div>
+    </div>
+    <div class="font-h2 text-h2 text-on-surface">{{ kpis.transactions }}</div>
+  </div>
+</div>
+
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+  <table class="w-full text-left border-collapse">
+    <thead>
+      <tr class="bg-surface-container-low">
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">N° vente</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Date</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Client</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase text-right">Produits</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase text-right">Total</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Utilisateur</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase text-center">Statut</th>
+      </tr>
+    </thead>
+    <tbody class="text-body-sm divide-y divide-[#E2E8F0]">
+      {% for sale in sales %}
+      <tr class="hover:bg-secondary-fixed/40 transition-colors">
+        <td class="px-6 py-2 font-data-mono text-data-mono font-medium"><a href="{% url 'sales:detail' sale.pk %}" class="hover:text-secondary">{{ sale.reference }}</a></td>
+        <td class="px-6 py-2">{{ sale.date|date:"d/m/Y H:i" }}</td>
+        <td class="px-6 py-2 text-on-surface">{{ sale.customer.name|default:"Client comptoir" }}</td>
+        <td class="px-6 py-2 text-right font-data-mono text-data-mono">{{ sale.items.count }}</td>
+        <td class="px-6 py-2 text-right font-data-mono text-data-mono font-medium">{{ sale.total|floatformat:0 }} {{ company_currency }}</td>
+        <td class="px-6 py-2 text-on-surface-variant">{{ sale.user }}</td>
+        <td class="px-6 py-2 text-center">
+          {% if sale.status == 'completed' %}
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#ecfdf5] text-[#065f46]">Complétée</span>
+          {% else %}
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#fef2f2] text-[#991b1b]">Annulée</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="px-6 py-12 text-center text-on-surface-variant">Aucune vente enregistrée. {% if can_manage %}<a href="{% url 'sales:new' %}" class="text-secondary hover:underline">Créer la première vente</a>{% endif %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

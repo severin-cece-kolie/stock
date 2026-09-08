@@ -1,0 +1,176 @@
+{% comment %} ------------------------------------------------------------------
+   Assets communs à TOUTES les pages (avec ou sans sidebar) : polices,
+   CDN Tailwind, config Tailwind (vérifiée strictement identique sur
+   les 11 pages de la maquette Stitch : mêmes 47 couleurs, mêmes
+   tokens borderRadius/spacing/fontFamily/fontSize).
+   ------------------------------------------------------------------ {% endcomment %}
+{% load static %}
+<link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}"/>
+
+<!-- PWA : installation à l'écran d'accueil (iOS et Android) -->
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#131b2e"/>
+<link rel="apple-touch-icon" href="{% static 'images/icons/apple-touch-icon.png' %}"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="StockManager"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                "colors": {
+                    "outline": "var(--color-outline)",
+                    "on-primary-container": "#7c839b",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed": "#002113",
+                    "secondary": "#0058be",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-secondary-container": "#fefcff",
+                    "secondary-container": "#2170e4",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "surface-container": "var(--color-surface-container)",
+                    "outline-variant": "var(--color-outline-variant)",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#bec6e0",
+                    "primary": "#000000",
+                    "primary-fixed": "#dae2fd",
+                    "primary-container": "#131b2e",
+                    "surface-bright": "var(--color-surface-bright)",
+                    "inverse-surface": "#2d3133",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "var(--color-surface-container-highest)",
+                    "tertiary-container": "#002113",
+                    "tertiary-fixed": "#6ffbbe",
+                    "on-surface": "var(--color-on-surface)",
+                    "surface-container-high": "var(--color-surface-container-high)",
+                    "surface-dim": "var(--color-surface-dim)",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed-variant": "#004395",
+                    "background": "var(--color-background)",
+                    "inverse-primary": "#bec6e0",
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-container-low": "var(--color-surface-container-low)",
+                    "on-primary-fixed": "#131b2e",
+                    "on-background": "var(--color-on-background)",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "surface-tint": "#565e74",
+                    "on-surface-variant": "var(--color-on-surface-variant)",
+                    "surface-variant": "var(--color-surface-container-highest)",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#001a42",
+                    "surface": "var(--color-surface)",
+                    "on-tertiary-container": "#009668",
+                    "secondary-fixed": "#d8e2ff",
+                    "tertiary": "#000000",
+                    "surface-container-lowest": "var(--color-surface-container-lowest)"
+                },
+                "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+                },
+                "spacing": {
+                    "gutter": "16px",
+                    "stack-gap": "12px",
+                    "container-padding": "24px",
+                    "unit": "4px",
+                    "sidebar-width": "260px"
+                },
+                "fontFamily": {
+                    "h2": ["Inter"],
+                    "h3": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "data-mono": ["JetBrains Mono"],
+                    "body-lg": ["Inter"],
+                    "h1": ["Inter"]
+                },
+                "fontSize": {
+                    "h2": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                    "h3": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                    "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                    "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                    "data-mono": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "h1": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                }
+            }
+        }
+    }
+</script>
+
+<style>
+    :root {
+        --color-background: #f7f9fb;
+        --color-surface: #f7f9fb;
+        --color-surface-bright: #f7f9fb;
+        --color-surface-dim: #d8dadc;
+        --color-surface-container-lowest: #ffffff;
+        --color-surface-container-low: #f2f4f6;
+        --color-surface-container: #eceef0;
+        --color-surface-container-high: #e6e8ea;
+        --color-surface-container-highest: #e0e3e5;
+        --color-on-background: #191c1e;
+        --color-on-surface: #191c1e;
+        --color-on-surface-variant: #45464d;
+        --color-outline: #76777d;
+        --color-outline-variant: #c6c6cd;
+    }
+    .dark {
+        --color-background: #10141f;
+        --color-surface: #10141f;
+        --color-surface-bright: #232a3d;
+        --color-surface-dim: #0b0e17;
+        --color-surface-container-lowest: #171d2b;
+        --color-surface-container-low: #1b2233;
+        --color-surface-container: #202840;
+        --color-surface-container-high: #262e47;
+        --color-surface-container-highest: #2c3550;
+        --color-on-background: #e7e9ec;
+        --color-on-surface: #e7e9ec;
+        --color-on-surface-variant: #a8adb8;
+        --color-outline: #6b7280;
+        --color-outline-variant: #333c58;
+    }
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+</style>
+<script>
+    // Applique la préférence sombre/clair AVANT le rendu de la page pour
+    // éviter le flash blanc au chargement. Préférence mémorisée dans
+    // localStorage ; à défaut, respecte le réglage du système.
+    (function () {
+        var saved = localStorage.getItem('stockmanager-theme');
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+            document.documentElement.classList.add('dark');
+        }
+    })();
+</script>
+<script>
+    // Enregistre le service worker pour l'installation PWA (icône à
+    // l'écran d'accueil iOS/Android). Échoue silencieusement si le
+    // navigateur ne le supporte pas (ex: certains contextes non-HTTPS).
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+    }
+</script>

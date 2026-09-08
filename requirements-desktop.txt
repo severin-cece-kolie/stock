@@ -1,0 +1,18 @@
+# Dépendances pour construire StockManager.exe (mode autonome, SQLite).
+# Contrairement à requirements.txt, mysqlclient n'est PAS nécessaire ici :
+# le mode desktop utilise SQLite, embarqué directement dans l'exécutable.
+
+Django==5.1.4
+python-decouple==3.8
+reportlab==4.2.5
+openpyxl==3.1.5
+django-widget-tweaks==1.5.0
+Pillow==11.0.0
+whitenoise==6.8.2
+
+# Serveur web local utilisé par l'exécutable (plus robuste que
+# "manage.py runserver" pour un usage desktop au quotidien)
+waitress==3.0.2
+
+# Outil de construction de l'exécutable Windows
+pyinstaller==6.11.1

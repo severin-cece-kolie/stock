@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Rapports & Statistiques{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="font-h1 text-h1 text-on-background mb-1">Rapports & Statistiques</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">Analyse de votre activité, basée sur les données réelles.</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'reports:export_stock_csv' %}" class="flex items-center gap-2 px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface text-body-sm font-medium hover:bg-surface-container-low transition-colors">
+      <span class="material-symbols-outlined text-lg">description</span> CSV
+    </a>
+    <a href="{% url 'reports:export_stock_pdf' %}" class="flex items-center gap-2 px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface text-body-sm font-medium hover:bg-surface-container-low transition-colors">
+      <span class="material-symbols-outlined text-lg">picture_as_pdf</span> PDF
+    </a>
+    <a href="{% url 'reports:export_stock_excel' %}" class="flex items-center gap-2 px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface text-body-sm font-medium hover:bg-surface-container-low transition-colors">
+      <span class="material-symbols-outlined text-lg">grid_on</span> Excel
+    </a>
+  </div>
+</div>
+
+<!-- KPI -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="bg-surface rounded-xl p-6 border border-outline-variant shadow-sm">
+    <div class="flex justify-between items-start mb-4">
+      <h3 class="font-body-md text-body-md text-on-surface-variant font-medium">Produits au catalogue</h3>
+      <div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center"><span class="material-symbols-outlined">inventory_2</span></div>
+    </div>
+    <span class="font-h2 text-h2 text-on-surface font-bold font-data-mono">{{ total_products }}</span>
+  </div>
+  <div class="bg-surface rounded-xl p-6 border border-error-container shadow-sm">
+    <div class="flex justify-between items-start mb-4">
+      <h3 class="font-body-md text-body-md text-on-surface-variant font-medium">Alertes Stock Faible</h3>
+      <div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center text-on-error-container"><span class="material-symbols-outlined">warning</span></div>
+    </div>
+    <div class="flex items-baseline gap-2">
+      <span class="font-h2 text-h2 text-error font-bold font-data-mono">{{ low_stock_count }}</span>
+      <span class="font-body-sm text-body-sm text-on-surface-variant">Articles</span>
+    </div>
+  </div>
+  <div class="bg-surface rounded-xl p-6 border border-outline-variant shadow-sm">
+    <div class="flex justify-between items-start mb-4">
+      <h3 class="font-body-md text-body-md text-on-surface-variant font-medium">Valeur d'Inventaire Est.</h3>
+      <div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center"><span class="material-symbols-outlined">inventory</span></div>
+    </div>
+    <span class="font-h2 text-h2 text-on-surface font-bold font-data-mono">{{ inventory_value|floatformat:0 }} {{ company_currency }}</span>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+  <!-- Line chart : CA 30 jours -->
+  <div class="lg:col-span-2 bg-surface rounded-xl border border-surface-variant shadow-sm flex flex-col overflow-hidden">
+    <div class="p-6 border-b border-surface-variant">
+      <h3 class="font-h3 text-h3 text-on-surface">Évolution du chiffre d'affaires</h3>
+      <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Total des ventes par jour (30 derniers jours)</p>
+    </div>
+    <div class="p-6 flex-1 relative min-h-[300px]">
+      <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="{{ chart.gradient_id }}" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="{{ chart.fill }}" stop-opacity="0.2"></stop>
+            <stop offset="100%" stop-color="{{ chart.fill }}" stop-opacity="0"></stop>
+          </linearGradient>
+        </defs>
+        <path d="{{ chart.fill_path }}" fill="url(#{{ chart.gradient_id }})"></path>
+        <path d="{{ chart.line_path }}" fill="none" stroke="{{ chart.stroke }}" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+        {% for point in chart.points %}
+        <circle cx="{{ point.0 }}" cy="{{ point.1 }}" fill="#fff" r="1" stroke="{{ chart.stroke }}" stroke-width="0.8"></circle>
+        {% endfor %}
+      </svg>
+    </div>
+    <div class="px-6 pb-4 flex justify-between text-[10px] text-on-surface-variant font-data-mono">
+      <span>{{ day_labels.0 }}</span>
+      <span>{{ day_labels.14 }}</span>
+      <span>{{ day_labels.29 }}</span>
+    </div>
+  </div>
+
+  <!-- Bar chart : ventes par catégorie -->
+  <div class="bg-surface rounded-xl border border-surface-variant shadow-sm flex flex-col overflow-hidden">
+    <div class="p-6 border-b border-surface-variant">
+      <h3 class="font-h3 text-h3 text-on-surface">Ventes par catégorie</h3>
+    </div>
+    <div class="p-6 flex-1 flex flex-col justify-end min-h-[300px]">
+      <div class="relative w-full h-[220px] flex items-end justify-around border-b border-surface-variant pb-2 gap-2">
+        {% for label, value, height, color in category_bars %}
+        <div class="relative flex-1 h-full flex flex-col justify-end group cursor-pointer">
+          <div class="w-full rounded-t-sm transition-all group-hover:opacity-80" style="height: {{ height }}%; background-color: {{ color }};"></div>
+        </div>
+        {% empty %}
+        <p class="text-on-surface-variant text-body-sm self-center mx-auto">Aucune vente enregistrée.</p>
+        {% endfor %}
+      </div>
+      <div class="flex justify-around mt-2 gap-2">
+        {% for label, value, height, color in category_bars %}
+        <span class="flex-1 text-[10px] text-on-surface-variant text-center truncate">{{ label }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Table produits en alerte -->
+<h3 class="font-h3 text-h3 mb-3">Produits en alerte de stock</h3>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+  <table class="w-full text-left border-collapse text-body-sm">
+    <thead>
+      <tr class="bg-surface-container-low"><th class="px-4 py-2 font-label-caps text-label-caps uppercase">Produit</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase text-right">Stock</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase text-right">Seuil min.</th></tr>
+    </thead>
+    <tbody class="divide-y divide-outline-variant/50">
+      {% for product in low_stock_products %}
+      <tr><td class="px-4 py-2 font-medium">{{ product.name }}</td><td class="px-4 py-2 text-right font-data-mono text-error">{{ product.stock_quantity }}</td><td class="px-4 py-2 text-right font-data-mono text-on-surface-variant">{{ product.minimum_stock }}</td></tr>
+      {% empty %}
+      <tr><td colspan="3" class="px-4 py-8 text-center text-on-surface-variant">Aucun produit en alerte. 🎉</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

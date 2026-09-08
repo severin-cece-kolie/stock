@@ -1,0 +1,116 @@
+{% load static widget_tweaks %}
+<!DOCTYPE html>
+<html class="light" lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>{{ company_name|default:"StockManager" }} - Connexion</title>
+{% include "partials/head_assets.html" %}
+</head>
+<body class="bg-background min-h-screen flex text-on-surface antialiased">
+
+<!-- Left Side: Branding & Illustration -->
+<div class="hidden lg:flex w-1/2 bg-primary-container relative flex-col justify-between p-12 overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-primary-container to-[#080d17] opacity-80 z-0"></div>
+  <div class="z-10 flex items-center gap-2">
+    <span class="material-symbols-outlined text-on-primary text-3xl" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+    <span class="font-h2 text-h2 text-on-primary">{{ company_name|default:"StockManager" }}</span>
+  </div>
+  <div class="z-10 flex flex-col justify-center flex-grow mt-12">
+    <h1 class="font-h1 text-h1 text-on-primary max-w-md mb-8">
+      Gestion intelligente de votre stock
+    </h1>
+    <div class="relative w-full max-w-lg aspect-square rounded-xl overflow-hidden shadow-2xl border border-on-primary/10 bg-[#0c121e]">
+      {# Emplacement de l'illustration de la maquette (image externe retirée : à remplacer par un asset local si souhaité) #}
+    </div>
+  </div>
+  <div class="z-10 text-on-primary-fixed-variant font-data-mono text-data-mono">
+    SYS_ENV: SECURE_LOGIN_GATEWAY // NODE_ID: 4829A
+  </div>
+</div>
+
+<!-- Right Side: Login Form -->
+<div class="w-full lg:w-1/2 flex items-center justify-center bg-surface-container-lowest p-8 relative">
+  <div class="w-full max-w-md">
+
+    <div class="flex lg:hidden items-center gap-2 mb-12 justify-center">
+      <span class="material-symbols-outlined text-primary-container text-3xl" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+      <span class="font-h2 text-h2 text-primary-container">{{ company_name|default:"StockManager" }}</span>
+    </div>
+
+    <div class="mb-10 text-center lg:text-left">
+      <h2 class="font-h1 text-h1 text-on-surface mb-2">Connexion</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant">Bienvenue sur {{ company_name|default:"StockManager" }}</p>
+    </div>
+
+    {% if form.non_field_errors %}
+    <div class="mb-6 px-4 py-3 rounded-lg bg-error-container border border-error text-on-error-container font-body-sm text-body-sm">
+      Identifiant ou mot de passe incorrect.
+    </div>
+    {% endif %}
+
+    <form method="POST" class="space-y-6">
+      {% csrf_token %}
+
+      <div>
+        <label class="block font-label-caps text-label-caps text-on-surface-variant uppercase mb-2" for="{{ form.username.id_for_label }}">Nom d'utilisateur</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span class="material-symbols-outlined text-outline-variant text-xl">person</span>
+          </div>
+          {{ form.username|add_class:"block w-full pl-10 pr-3 py-3 border border-outline-variant rounded-lg bg-surface-container-lowest font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition-shadow shadow-sm"|attr:"placeholder:Saisissez votre identifiant" }}
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-label-caps text-label-caps text-on-surface-variant uppercase mb-2" for="{{ form.password.id_for_label }}">Mot de passe</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span class="material-symbols-outlined text-outline-variant text-xl">lock</span>
+          </div>
+          {{ form.password|add_class:"block w-full pl-10 pr-10 py-3 border border-outline-variant rounded-lg bg-surface-container-lowest font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary transition-shadow shadow-sm"|attr:"placeholder:••••••••" }}
+          <button class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors focus:outline-none" id="togglePassword" type="button">
+            <span class="material-symbols-outlined text-xl" id="toggleIcon">visibility</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mt-6">
+        <div class="flex items-center">
+          <input class="h-4 w-4 text-secondary focus:ring-secondary border-outline-variant rounded bg-surface-container-lowest cursor-pointer" id="remember-me" name="remember-me" type="checkbox"/>
+          <label class="ml-2 block font-body-sm text-body-sm text-on-surface-variant cursor-pointer" for="remember-me">
+            Se souvenir de moi
+          </label>
+        </div>
+        <div class="text-sm">
+          <span class="font-body-sm text-body-sm text-on-surface-variant">Mot de passe oublié ? Contactez un administrateur.</span>
+        </div>
+      </div>
+
+      <div class="pt-4">
+        <button class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-caps text-label-caps text-on-primary bg-primary-container hover:bg-on-primary-fixed-variant focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-container transition-all duration-200" type="submit">
+          Se connecter
+          <span class="material-symbols-outlined ml-2 text-[18px]">arrow_forward</span>
+        </button>
+      </div>
+    </form>
+
+    <div class="mt-12 text-center">
+      <p class="font-data-mono text-data-mono text-outline">Version 1.0.0</p>
+    </div>
+  </div>
+</div>
+
+<script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#{{ form.password.id_for_label }}');
+    const toggleIcon = document.querySelector('#toggleIcon');
+
+    togglePassword.addEventListener('click', function (e) {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        toggleIcon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+    });
+</script>
+</body>
+</html>

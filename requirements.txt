@@ -1,0 +1,25 @@
+# --- Framework principal ---
+Django==5.1.4
+
+# --- Base de données MySQL ---
+mysqlclient==2.2.7
+
+# --- Gestion des variables d'environnement (.env) ---
+python-decouple==3.8
+
+# --- Support DATABASE_URL (hébergement en ligne : Render, Railway...) ---
+dj-database-url==2.3.0
+
+# --- Génération de rapports ---
+reportlab==4.2.5          # export PDF
+openpyxl==3.1.5           # export Excel
+
+# --- Formulaires / UI ---
+django-widget-tweaks==1.5.0   # ajout de classes Tailwind sur les champs de formulaire Django sans casser le design Stitch
+
+# --- Images (upload logo, avatars) ---
+Pillow==11.0.0
+
+# --- Serveur de production (déploiement futur) ---
+gunicorn==23.0.0
+whitenoise==6.8.2

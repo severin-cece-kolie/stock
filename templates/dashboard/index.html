@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <h1 class="font-h1 text-h1 text-on-background">Bonjour {{ request.user.get_full_name|default:request.user.username }} 👋</h1>
+  <p class="text-on-surface-variant font-body-lg text-body-lg mt-1">Voici un aperçu de votre activité aujourd'hui.</p>
+</div>
+
+<!-- KPI Cards Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-surface-container-lowest rounded-lg p-5 border border-outline-variant shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow">
+    <div class="flex justify-between items-start mb-2">
+      <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Produits</span>
+      <div class="p-2 bg-secondary-fixed rounded-lg text-secondary"><span class="material-symbols-outlined text-xl">inventory_2</span></div>
+    </div>
+    <div class="font-h2 text-h2 font-semibold text-on-background">{{ total_products }}</div>
+    <div class="text-on-surface-variant text-xs mt-1">Produits enregistrés</div>
+  </div>
+
+  <div class="bg-surface-container-lowest rounded-lg p-5 border border-outline-variant shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow">
+    <div class="flex justify-between items-start mb-2">
+      <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Ventes</span>
+      <div class="p-2 bg-tertiary-fixed rounded-lg text-on-tertiary-fixed"><span class="material-symbols-outlined text-xl">shopping_cart</span></div>
+    </div>
+    <div class="font-h2 text-h2 font-semibold text-on-background">{{ sales_this_month }}</div>
+    <div class="flex items-center gap-1.5 text-xs mt-1">
+      <span class="text-on-surface-variant">Ventes ce mois</span>
+      {% if revenue_trend_pct is not None %}
+      <span class="flex items-center font-medium {% if revenue_trend_pct >= 0 %}text-on-tertiary-container{% else %}text-error{% endif %}">
+        <span class="material-symbols-outlined text-[14px]">{% if revenue_trend_pct >= 0 %}trending_up{% else %}trending_down{% endif %}</span>
+        {{ revenue_trend_pct }}%
+      </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="bg-surface-container-lowest rounded-lg p-5 border border-outline-variant shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow">
+    <div class="flex justify-between items-start mb-2">
+      <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Stock faible</span>
+      <div class="p-2 bg-[#FFF3E0] rounded-lg text-[#E65100]"><span class="material-symbols-outlined text-xl">warning</span></div>
+    </div>
+    <div class="font-h2 text-h2 font-semibold text-on-background">{{ low_stock_count }}</div>
+    <div class="text-[#E65100] text-xs mt-1 font-medium">Produits à surveiller</div>
+  </div>
+
+  <div class="bg-surface-container-lowest rounded-lg p-5 border border-outline-variant shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow">
+    <div class="flex justify-between items-start mb-2">
+      <span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Valeur du stock</span>
+      <div class="p-2 bg-secondary-fixed rounded-lg text-secondary"><span class="material-symbols-outlined text-xl">account_balance_wallet</span></div>
+    </div>
+    <div class="font-h2 text-h2 font-semibold text-on-background">{{ inventory_value|floatformat:0 }}<span class="text-sm text-on-surface-variant ml-1 font-normal">{{ company_currency }}</span></div>
+    <div class="text-on-surface-variant text-xs mt-1">Valeur totale estimée</div>
+  </div>
+</div>
+
+<!-- Évolution des ventes (SVG serveur) -->
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-6 mb-6">
+  <h2 class="font-h3 text-h3 text-on-background mb-1">Évolution des ventes</h2>
+  <p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Chiffre d'affaires quotidien (14 derniers jours)</p>
+  <div class="relative min-h-[260px]">
+    <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="{{ chart.gradient_id }}" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="{{ chart.fill }}" stop-opacity="0.25"></stop>
+          <stop offset="100%" stop-color="{{ chart.fill }}" stop-opacity="0"></stop>
+        </linearGradient>
+      </defs>
+      <path d="{{ chart.fill_path }}" fill="url(#{{ chart.gradient_id }})"></path>
+      <path d="{{ chart.line_path }}" fill="none" stroke="{{ chart.stroke }}" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+      {% for point in chart.points %}
+      <circle cx="{{ point.0 }}" cy="{{ point.1 }}" fill="#fff" r="1" stroke="{{ chart.stroke }}" stroke-width="0.8"></circle>
+      {% endfor %}
+    </svg>
+  </div>
+  <div class="flex justify-between text-[10px] text-on-surface-variant font-data-mono mt-2">
+    <span>{{ day_labels.0 }}</span>
+    <span>{{ day_labels.6 }}</span>
+    <span>{{ day_labels.13 }}</span>
+  </div>
+</div>
+
+<!-- Produits les plus vendus + Ventes par catégorie -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <div class="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-6">
+    <h3 class="font-h3 text-h3 text-on-background mb-1">Produits les plus vendus</h3>
+    <p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Quantités cumulées vendues</p>
+    <div class="space-y-3">
+      {% for p in top_products %}
+      <div class="flex items-center gap-3">
+        <span class="font-body-sm text-body-sm text-on-surface-variant w-5 shrink-0">{{ forloop.counter }}</span>
+        <span class="font-body-sm text-body-sm font-medium text-on-surface flex-1 truncate">{{ p.product__name }}</span>
+        <div class="w-28 h-2 bg-surface-container-high rounded-full overflow-hidden shrink-0">
+          <div class="h-full bg-secondary rounded-full" style="width: {% widthratio p.total_qty max_top_qty 100 %}%"></div>
+        </div>
+        <span class="font-data-mono text-data-mono text-xs text-on-surface-variant w-10 text-right shrink-0">{{ p.total_qty }}</span>
+      </div>
+      {% empty %}
+      <p class="text-on-surface-variant text-body-sm text-center py-6">Aucune vente enregistrée pour l'instant.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-6">
+    <h3 class="font-h3 text-h3 text-on-background mb-1">Ventes par catégorie</h3>
+    <p class="font-body-sm text-body-sm text-on-surface-variant mb-4">30 derniers jours</p>
+    {% if category_bars %}
+    <div class="flex items-end justify-around h-[140px] gap-3 border-b border-outline-variant pb-2">
+      {% for label, value, height, color in category_bars %}
+      <div class="flex-1 h-full flex flex-col justify-end items-center group">
+        <span class="text-[10px] font-data-mono text-on-surface-variant mb-1 opacity-0 group-hover:opacity-100 transition-opacity">{{ value|floatformat:0 }}</span>
+        <div class="w-full rounded-t-sm transition-all" style="height: {{ height }}%; background-color: {{ color }};"></div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="flex justify-around mt-2 gap-3">
+      {% for label, value, height, color in category_bars %}
+      <span class="flex-1 text-[10px] text-on-surface-variant text-center truncate">{{ label }}</span>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-on-surface-variant text-body-sm text-center py-10">Aucune vente sur les 30 derniers jours.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Bottom Section: Two Columns -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Stock Faible -->
+  <div class="lg:col-span-1 bg-surface-container-lowest rounded-lg card-shadow border border-outline-variant flex flex-col">
+    <div class="p-5 border-b border-outline-variant">
+      <h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Stock Faible</h3>
+      <p class="text-xs text-on-surface-variant">Produits nécessitant un réassort</p>
+    </div>
+    <div class="flex-1 overflow-y-auto max-h-[300px]">
+      {% for product in low_stock_products %}
+      <div class="flex items-center justify-between p-4 border-b border-[#F1F5F9] hover:bg-surface-container-low transition-colors">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded {% if product.is_out_of_stock %}bg-[#FFEBEE] text-[#D32F2F]{% else %}bg-[#FFF3E0] text-[#E65100]{% endif %} flex items-center justify-center">
+            <span class="material-symbols-outlined text-sm">inventory_2</span>
+          </div>
+          <span class="font-medium text-sm">{{ product.name }}</span>
+        </div>
+        <span class="{% if product.is_out_of_stock %}bg-[#FFEBEE] text-[#D32F2F]{% else %}bg-[#FFF3E0] text-[#E65100]{% endif %} px-2 py-1 rounded-full text-xs font-bold">{{ product.stock_quantity }} restant{{ product.stock_quantity|pluralize }}</span>
+      </div>
+      {% empty %}
+      <p class="p-6 text-center text-on-surface-variant text-body-sm">Aucune alerte de stock. 🎉</p>
+      {% endfor %}
+    </div>
+    <div class="p-4 border-t border-outline-variant">
+      <a href="{% url 'products:index' %}" class="block text-center w-full py-2 bg-surface border border-outline-variant rounded-lg text-sm font-medium hover:bg-surface-container-low transition-colors">
+        Voir tous les produits
+      </a>
+    </div>
+  </div>
+
+  <!-- Activité Récente -->
+  <div class="lg:col-span-2 bg-surface-container-lowest rounded-lg card-shadow border border-outline-variant">
+    <div class="p-5 border-b border-outline-variant">
+      <h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Activité Récente</h3>
+      <p class="text-xs text-on-surface-variant">Dernières opérations enregistrées</p>
+    </div>
+    <div>
+      <table class="w-full text-left text-sm">
+        <thead class="bg-surface-container-low text-[#45464d] font-label-caps text-label-caps uppercase">
+          <tr>
+            <th class="px-4 py-3 font-semibold">Heure</th>
+            <th class="px-4 py-3 font-semibold">Action</th>
+            <th class="px-4 py-3 font-semibold">Description</th>
+            <th class="px-4 py-3 font-semibold text-right">Utilisateur</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in recent_activity %}
+          <tr class="border-b border-[#F1F5F9] hover:bg-secondary-fixed/40 transition-colors">
+            <td class="px-4 py-3 text-on-surface-variant font-data-mono text-data-mono">{{ log.timestamp|date:"H:i" }}</td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center gap-1 text-secondary bg-secondary-fixed px-2 py-0.5 rounded text-xs font-medium">{{ log.action }}</span>
+            </td>
+            <td class="px-4 py-3 font-medium">{{ log.description|truncatechars:50 }}</td>
+            <td class="px-4 py-3 text-right text-on-surface-variant">{{ log.user|default:"—" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="px-4 py-8 text-center text-on-surface-variant">Aucune activité récente.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

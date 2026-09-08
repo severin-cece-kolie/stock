@@ -1,0 +1,103 @@
+{% comment %} ------------------------------------------------------------------
+   Topbar — extraite à l'identique de la maquette Stitch. L'avatar
+   "John Doe" codé en dur est remplacé par l'utilisateur réellement
+   connecté (request.user), avec une image par défaut tant qu'aucun
+   avatar n'a été uploadé.
+   ------------------------------------------------------------------ {% endcomment %}
+<header class="fixed top-0 right-0 left-0 lg:left-[260px] h-16 flex justify-between items-center px-4 sm:px-6 z-30 bg-surface dark:bg-surface-dim shadow-sm border-b border-outline-variant">
+  <!-- Bouton menu (mobile uniquement) -->
+  <button onclick="window.openSidebar()" class="lg:hidden p-2 -ml-2 mr-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors shrink-0">
+    <span class="material-symbols-outlined">menu</span>
+  </button>
+
+  <!-- Search Bar -->
+  <div class="flex-1 max-w-md">
+    <form class="relative group" method="get" action="#">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-secondary transition-colors">search</span>
+      <input
+        type="text"
+        name="q"
+        class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:border-secondary focus:ring-1 focus:ring-secondary transition-all outline-none"
+        placeholder="Rechercher (ex: INV-2026, Clavier...)"
+        value="{{ request.GET.q|default:'' }}"
+      />
+    </form>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex items-center gap-1 sm:gap-4">
+    <button onclick="window.toggleTheme()" class="p-2 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-full transition-colors cursor-pointer active:scale-95" title="Basculer le thème clair/sombre">
+      <span class="material-symbols-outlined dark:hidden">dark_mode</span>
+      <span class="material-symbols-outlined hidden dark:inline">light_mode</span>
+    </button>
+
+    <div class="relative">
+      <button onclick="document.getElementById('notif-dropdown').classList.toggle('hidden')" class="p-2 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-full transition-colors relative cursor-pointer active:scale-95">
+        <span class="material-symbols-outlined">notifications</span>
+        {% if low_stock_count %}
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+        {% endif %}
+      </button>
+
+      <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg z-50 overflow-hidden">
+        <div class="px-4 py-3 border-b border-outline-variant flex items-center justify-between">
+          <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Alertes stock</span>
+          {% if low_stock_count %}
+          <span class="text-xs font-bold text-error">{{ low_stock_count }}</span>
+          {% endif %}
+        </div>
+        <div class="max-h-80 overflow-y-auto">
+          {% for product in low_stock_alerts %}
+          <a href="{% url 'products:detail' product.pk %}" class="flex items-center justify-between px-4 py-3 border-b border-outline-variant/40 hover:bg-secondary-fixed/40 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px] {% if product.stock_quantity == 0 %}text-error{% else %}text-[#E65100]{% endif %}">
+                {% if product.stock_quantity == 0 %}error{% else %}warning{% endif %}
+              </span>
+              <span class="text-body-sm font-medium">{{ product.name }}</span>
+            </div>
+            <span class="text-xs font-data-mono {% if product.stock_quantity == 0 %}text-error{% else %}text-[#E65100]{% endif %}">
+              {% if product.stock_quantity == 0 %}Rupture{% else %}{{ product.stock_quantity }} restant{{ product.stock_quantity|pluralize }}{% endif %}
+            </span>
+          </a>
+          {% empty %}
+          <p class="px-4 py-6 text-center text-on-surface-variant text-body-sm">Aucune alerte. Tout va bien 🎉</p>
+          {% endfor %}
+        </div>
+        {% if low_stock_count %}
+        <a href="{% url 'products:index' %}?stock=low" class="block text-center py-2.5 text-body-sm text-secondary hover:bg-surface-container-low transition-colors font-medium">
+          Voir tous les produits en alerte
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="hidden sm:block h-6 w-[1px] bg-outline-variant mx-1"></div>
+
+    <div class="flex items-center gap-2 sm:gap-3 cursor-pointer hover:bg-surface-container-low p-1.5 sm:pr-3 rounded-full transition-colors active:scale-95">
+      {% if request.user.avatar %}
+        <img class="w-8 h-8 rounded-full object-cover border border-outline-variant" src="{{ request.user.avatar.url }}" alt="{{ request.user }}" />
+      {% else %}
+        <div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-on-secondary font-body-sm text-body-sm border border-outline-variant">
+          {{ request.user.get_full_name|default:request.user.username|slice:":1"|upper }}
+        </div>
+      {% endif %}
+      <span class="hidden sm:inline font-body-sm text-body-sm font-medium text-on-surface">{{ request.user.get_full_name|default:request.user.username }}</span>
+      <span class="hidden sm:inline material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span>
+    </div>
+  </div>
+</header>
+
+<script>
+  window.toggleTheme = function () {
+    var isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('stockmanager-theme', isDark ? 'dark' : 'light');
+  };
+
+  document.addEventListener('click', function (event) {
+    var dropdown = document.getElementById('notif-dropdown');
+    if (!dropdown || dropdown.classList.contains('hidden')) return;
+    if (!event.target.closest('#notif-dropdown') && !event.target.closest('button[onclick*="notif-dropdown"]')) {
+      dropdown.classList.add('hidden');
+    }
+  });
+</script>

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Vente {{ sale.reference }}{% endblock %}
+
+{% block content %}
+<div class="max-w-[700px] mx-auto">
+  <a href="{% url 'sales:index' %}" class="text-body-sm text-secondary hover:underline flex items-center gap-1 mb-4">
+    <span class="material-symbols-outlined text-[18px]">arrow_back</span> Retour aux ventes
+  </a>
+
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8">
+    <div class="flex justify-between items-start mb-6 pb-6 border-b border-outline-variant">
+      <div>
+        <h1 class="font-h1 text-h1 text-on-background">{{ sale.reference }}</h1>
+        <p class="text-on-surface-variant text-body-sm mt-1">{{ sale.date|date:"d/m/Y à H:i" }}</p>
+      </div>
+      {% if sale.status == 'completed' %}
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#ecfdf5] text-[#065f46]">Complétée</span>
+      {% else %}
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#fef2f2] text-[#991b1b]">Annulée</span>
+      {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 text-body-sm">
+      <div><p class="text-on-surface-variant">Client</p><p class="font-medium">{{ sale.customer.name|default:"Client comptoir" }}</p></div>
+      <div><p class="text-on-surface-variant">Vendeur</p><p class="font-medium">{{ sale.user }}</p></div>
+    </div>
+
+    <table class="w-full text-left border-collapse mb-6">
+      <thead>
+        <tr class="border-b border-outline-variant"><th class="py-2 font-label-caps text-label-caps uppercase">Article</th><th class="py-2 font-label-caps text-label-caps uppercase text-right">Qté</th><th class="py-2 font-label-caps text-label-caps uppercase text-right">P.U.</th><th class="py-2 font-label-caps text-label-caps uppercase text-right">Sous-total</th></tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/40 text-body-sm">
+        {% for item in sale.items.all %}
+        <tr>
+          <td class="py-2">{{ item.product.name }}</td>
+          <td class="py-2 text-right font-data-mono">{{ item.quantity }}</td>
+          <td class="py-2 text-right font-data-mono">{{ item.unit_price|floatformat:0 }}</td>
+          <td class="py-2 text-right font-data-mono font-medium">{{ item.subtotal|floatformat:0 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="flex justify-end">
+      <div class="w-64 flex justify-between font-h3 text-h3 pt-3 border-t border-outline-variant">
+        <span>Total</span>
+        <span class="font-data-mono">{{ sale.total|floatformat:0 }} {{ company_currency }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

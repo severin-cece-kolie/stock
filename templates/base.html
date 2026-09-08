@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>{% block title %}StockManager{% endblock %} — {{ company_name|default:"Kamsar Street" }}</title>
+
+{% include "partials/head_assets.html" %}
+{% block extra_head %}{% endblock %}
+</head>
+<body class="bg-background min-h-screen text-on-surface antialiased">
+
+{% include "partials/sidebar.html" %}
+{% include "partials/topbar.html" %}
+
+{% comment %} ------------------------------------------------------------------
+   Toasts — messages de succès/erreur (section 19 du cahier des
+   charges). Utilise le framework messages de Django ; chaque vue peut
+   déclencher messages.success(...) / messages.error(...) normalement.
+   ------------------------------------------------------------------ {% endcomment %}
+{% if messages %}
+<div class="fixed top-20 left-4 right-4 sm:left-auto sm:right-6 z-50 space-y-2 sm:w-full sm:max-w-sm" id="toast-container">
+  {% for message in messages %}
+  <div class="flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border font-body-sm text-body-sm
+              {% if message.tags == 'success' %}bg-tertiary-fixed-dim/20 border-on-tertiary-container text-on-tertiary-fixed-variant
+              {% elif message.tags == 'error' %}bg-error-container border-error text-on-error-container
+              {% elif message.tags == 'warning' %}bg-secondary-fixed border-secondary text-on-secondary-fixed-variant
+              {% else %}bg-surface-container-lowest border-outline-variant text-on-surface{% endif %}">
+    <span class="material-symbols-outlined text-[18px]">
+      {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
+    </span>
+    <span>{{ message }}</span>
+  </div>
+  {% endfor %}
+</div>
+<script>
+  setTimeout(function () {
+    var el = document.getElementById('toast-container');
+    if (el) { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; }
+  }, 4000);
+</script>
+{% endif %}
+
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-0 lg:ml-[260px] mt-16 p-4 sm:p-container-padding overflow-y-auto bg-background">
+  <div class="max-w-[1400px] mx-auto space-y-gutter">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

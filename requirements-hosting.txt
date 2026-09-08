@@ -1,0 +1,13 @@
+# Dépendances additionnelles pour héberger StockManager en ligne
+# (ex. Render, Railway) avec une base de données PostgreSQL — souvent
+# le choix le plus simple sur ces plateformes (offre gratuite fournie
+# automatiquement, contrairement à MySQL qui demande un service tiers).
+#
+# Installation : pip install -r requirements.txt -r requirements-hosting.txt
+#
+# Si votre hébergeur fournit du MySQL plutôt que du PostgreSQL, ce
+# fichier n'est PAS nécessaire : gardez requirements.txt (mysqlclient
+# suffit), et donnez simplement une DATABASE_URL au format
+# mysql://utilisateur:mot_de_passe@hote:3306/nom_base
+
+psycopg2-binary==2.9.10

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Nouvelle Vente{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <h2 class="font-h3 text-h3 text-on-surface">Nouvelle Vente</h2>
+  <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Recherchez des produits et ajoutez-les au panier.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Colonne recherche produit -->
+  <div class="lg:col-span-2">
+    <!-- Scan code-barres : un scanner USB/Bluetooth "tape" le code puis Entrée -->
+    <form method="post" id="scan-form" class="relative mb-3">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="scan"/>
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary">barcode_scanner</span>
+      <input id="scan-input" name="barcode" autofocus autocomplete="off" class="w-full pl-10 pr-4 py-2.5 bg-secondary-fixed/30 border-2 border-secondary rounded-lg font-data-mono text-data-mono text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-shadow" placeholder="Scanner un code-barres (ou le saisir puis Entrée)..." type="text"/>
+    </form>
+    <script>
+      // Le curseur revient automatiquement sur le champ de scan après chaque
+      // ajout, pour permettre de scanner plusieurs produits à la suite sans
+      // cliquer nulle part (comportement standard d'une caisse).
+      document.getElementById('scan-input').focus();
+    </script>
+
+    <form method="get" class="relative mb-4">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+      <input name="q" value="{{ query }}" class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-shadow" placeholder="Ou rechercher un produit par nom ou référence..." type="text"/>
+    </form>
+
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low">
+            <th class="font-label-caps text-label-caps text-on-surface-variant px-3 py-2 border-b border-surface-variant uppercase">Article</th>
+            <th class="font-label-caps text-label-caps text-on-surface-variant px-3 py-2 border-b border-surface-variant uppercase text-right">Stock</th>
+            <th class="font-label-caps text-label-caps text-on-surface-variant px-3 py-2 border-b border-surface-variant uppercase text-right">Prix</th>
+            <th class="font-label-caps text-label-caps text-on-surface-variant px-3 py-2 border-b border-surface-variant"></th>
+          </tr>
+        </thead>
+        <tbody class="text-body-sm divide-y divide-outline-variant/50">
+          {% for product in products %}
+          <tr class="hover:bg-secondary-fixed/40 transition-colors">
+            <td class="px-3 py-2 font-medium">{{ product.name }} <span class="text-on-surface-variant font-data-mono text-xs">({{ product.reference }})</span></td>
+            <td class="px-3 py-2 text-right font-data-mono text-data-mono {% if product.is_low_stock or product.is_out_of_stock %}text-error{% endif %}">{{ product.stock_quantity }}</td>
+            <td class="px-3 py-2 text-right font-data-mono text-data-mono">{{ product.selling_price|floatformat:0 }} {{ company_currency }}</td>
+            <td class="px-3 py-2 text-right">
+              <form method="post" class="flex items-center justify-end gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add"/>
+                <input type="hidden" name="product_id" value="{{ product.pk }}"/>
+                <input type="number" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}" class="w-16 px-2 py-1 border border-outline-variant rounded text-right text-body-sm" {% if product.is_out_of_stock %}disabled{% endif %}/>
+                <button type="submit" class="p-1.5 bg-secondary text-on-secondary rounded hover:bg-secondary/90 transition-colors disabled:opacity-40" {% if product.is_out_of_stock %}disabled{% endif %}>
+                  <span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="px-3 py-8 text-center text-on-surface-variant">Aucun produit trouvé.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Colonne panier -->
+  <div class="lg:col-span-1">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 sticky top-20">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-h3 text-h3 text-on-surface">Panier</h3>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">{{ cart_lines|length }} article{{ cart_lines|length|pluralize }}</span>
+      </div>
+
+      <div class="space-y-3 mb-4 max-h-[320px] overflow-y-auto">
+        {% for line in cart_lines %}
+        <div class="flex items-center justify-between text-body-sm border-b border-outline-variant/40 pb-2">
+          <div>
+            <p class="font-medium">{{ line.product.name }}</p>
+            <p class="text-on-surface-variant font-data-mono text-xs">{{ line.quantity }} × {{ line.product.selling_price|floatformat:0 }} {{ company_currency }}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-data-mono text-data-mono font-medium">{{ line.subtotal|floatformat:0 }}</span>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="remove"/>
+              <input type="hidden" name="product_id" value="{{ line.product.pk }}"/>
+              <button type="submit" class="text-outline hover:text-error transition-colors">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </form>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-on-surface-variant text-body-sm text-center py-6">Le panier est vide.</p>
+        {% endfor %}
+      </div>
+
+      <div class="flex items-center justify-between font-h3 text-h3 mb-4 pt-2 border-t border-outline-variant">
+        <span>Total</span>
+        <span class="font-data-mono">{{ cart_total|floatformat:0 }} {{ company_currency }}</span>
+      </div>
+
+      <form method="post" class="flex flex-col gap-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="checkout"/>
+        <div>
+          <label class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Client</label>
+          <select name="customer" class="w-full px-3 py-2 border border-outline-variant rounded-lg text-body-sm">
+            <option value="">Client comptoir</option>
+            {% for customer in customers %}
+            <option value="{{ customer.pk }}">{{ customer.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" {% if not cart_lines %}disabled{% endif %} class="w-full py-3 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[20px]">check_circle</span> Valider la vente
+        </button>
+      </form>
+      {% if cart_lines %}
+      <form method="post" class="mt-2">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="clear"/>
+        <button type="submit" class="w-full py-2 text-body-sm text-error hover:underline">Vider le panier</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

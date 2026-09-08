@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}{% if is_edit %}Modifier {{ product.name }}{% else %}Nouveau produit{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-[1000px] mx-auto">
+  <div class="mb-8">
+    <h1 class="font-h1 text-h1 text-on-background mb-2">{% if is_edit %}Modifier le produit{% else %}Nouveau produit{% endif %}</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">
+      {% if is_edit %}Mettez à jour les informations de « {{ product.name }} ».{% else %}Remplissez les informations ci-dessous pour ajouter un nouvel article au catalogue.{% endif %}
+    </p>
+  </div>
+
+  <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant">
+    <form method="post" enctype="multipart/form-data" class="flex flex-col">
+      {% csrf_token %}
+      <div class="p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+          <!-- Colonne 1 : Informations générales -->
+          <div class="flex flex-col gap-6">
+            <h3 class="font-h3 text-h3 text-on-background border-b border-surface-container-high pb-2">Informations générales</h3>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.name.id_for_label }}">Nom du produit <span class="text-error">*</span></label>
+              {{ form.name }}
+              {% for error in form.name.errors %}<p class="text-error text-body-sm">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.reference.id_for_label }}">Référence <span class="text-error">*</span></label>
+              {{ form.reference }}
+              {% for error in form.reference.errors %}<p class="text-error text-body-sm">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.barcode.id_for_label }}">Code-barres</label>
+              {{ form.barcode }}
+              {% for error in form.barcode.errors %}<p class="text-error text-body-sm">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.category.id_for_label }}">Catégorie</label>
+              <div class="relative">
+                {{ form.category }}
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.supplier.id_for_label }}">Fournisseur</label>
+              <div class="relative">
+                {{ form.supplier }}
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.status.id_for_label }}">Statut</label>
+              <div class="relative">
+                {{ form.status }}
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.image.id_for_label }}">Image du produit</label>
+              {{ form.image }}
+              {% if product.image %}
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="mt-2 w-24 h-24 object-cover rounded-lg border border-outline-variant">
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Colonne 2 : Prix et stock -->
+          <div class="flex flex-col gap-6">
+            <h3 class="font-h3 text-h3 text-on-background border-b border-surface-container-high pb-2">Prix et stock</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.purchase_price.id_for_label }}">Prix d'achat ({{ company_currency }})</label>
+                {{ form.purchase_price }}
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.selling_price.id_for_label }}">Prix de vente ({{ company_currency }})</label>
+                {{ form.selling_price }}
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.stock_quantity.id_for_label }}">
+                  {% if is_edit %}Stock actuel{% else %}Stock initial{% endif %}
+                </label>
+                {{ form.stock_quantity }}
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.minimum_stock.id_for_label }}">Seuil minimum</label>
+                {{ form.minimum_stock }}
+                <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 text-xs">Alerte de réapprovisionnement</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 flex flex-col gap-1.5">
+          <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.description.id_for_label }}">Description</label>
+          {{ form.description }}
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="bg-surface py-4 px-8 border-t border-outline-variant flex items-center justify-end gap-3 rounded-b-xl">
+        <a href="{% url 'products:index' %}" class="px-5 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md text-body-md font-medium hover:bg-surface-container-low transition-colors active:scale-95 focus:outline-none focus:ring-2 focus:ring-outline/20">
+          Annuler
+        </a>
+        <button class="px-5 py-2.5 rounded-lg bg-primary text-on-primary font-body-md text-body-md font-medium hover:bg-primary/90 transition-colors shadow-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center gap-2" type="submit">
+          <span class="material-symbols-outlined text-[20px]">{% if is_edit %}save{% else %}add{% endif %}</span>
+          {% if is_edit %}Enregistrer les modifications{% else %}Créer le produit{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

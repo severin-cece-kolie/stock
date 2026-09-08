@@ -1,0 +1,29 @@
+# Environnements virtuels
+venv/
+env/
+.venv/
+build_venv/
+
+# Django
+*.pyc
+__pycache__/
+*.sqlite3
+db_test.sqlite3
+/staticfiles/
+/media/
+config/settings_test.py
+
+# Empaquetage .exe (StockManager Desktop)
+/build/
+/dist/
+*.spec
+/data/
+
+# Variables d'environnement (secrets)
+.env
+
+# Éditeurs / OS
+.vscode/
+.idea/
+.DS_Store
+*.log

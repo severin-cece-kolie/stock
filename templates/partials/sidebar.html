@@ -1,0 +1,123 @@
+{% load static %}
+{% comment %} ------------------------------------------------------------------
+   Sidebar — extraite à l'identique de la maquette Stitch (classes,
+   couleurs, espacements inchangés). Seule différence : les 9 liens
+   sont générés dynamiquement (état actif basé sur request.resolver_match)
+   au lieu d'être dupliqués sur chaque page comme dans le HTML brut.
+   ------------------------------------------------------------------ {% endcomment %}
+<!-- Fond semi-transparent affiché derrière la sidebar sur mobile quand elle est ouverte -->
+<div id="sidebar-backdrop" onclick="window.closeSidebar()" class="hidden fixed inset-0 bg-black/40 z-30 lg:hidden"></div>
+
+<aside id="mobile-sidebar" class="fixed flex flex-col h-full w-[260px] z-40 bg-primary-container dark:bg-primary-container shadow-sm border-r border-outline-variant/20 left-0 top-0 -translate-x-full lg:translate-x-0 transition-transform duration-200">
+  <!-- Brand Header -->
+  <div class="flex items-center gap-3 px-6 py-6 border-b border-white/5">
+    <div class="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center shrink-0">
+      <span class="material-symbols-outlined text-on-secondary" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+    </div>
+    <div>
+      <h1 class="font-h2 text-h2 font-bold text-on-primary dark:text-on-primary tracking-tight truncate">{{ company_name|default:"StockManager" }}</h1>
+      <p class="font-label-caps text-label-caps text-on-primary/60 truncate uppercase">Precision Control</p>
+    </div>
+    <button onclick="window.closeSidebar()" class="ml-auto lg:hidden text-on-primary/70 hover:text-on-primary">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <!-- Navigation Links -->
+  <nav class="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+    {% with ns=request.resolver_match.namespace %}
+
+    {% comment %} Dashboard {% endcomment %}
+    <a href="{% url 'dashboard:index' %}"
+       class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer
+              {% if ns == 'dashboard' %}border-l-4 border-secondary text-on-primary bg-primary/10 rounded-r-DEFAULT{% else %}text-on-primary-fixed-variant opacity-80 hover:bg-primary/20 hover:opacity-100 rounded-DEFAULT{% endif %}">
+      <span class="material-symbols-outlined" {% if ns == 'dashboard' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>dashboard</span>
+      <span class="font-body-md text-body-md {% if ns == 'dashboard' %}font-semibold{% endif %}">Dashboard</span>
+    </a>
+
+    {% comment %} Products {% endcomment %}
+    <a href="{% url 'products:index' %}"
+       class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer
+              {% if ns == 'products' %}border-l-4 border-secondary text-on-primary bg-primary/10 rounded-r-DEFAULT{% else %}text-on-primary-fixed-variant opacity-80 hover:bg-primary/20 hover:opacity-100 rounded-DEFAULT{% endif %}">
+      <span class="material-symbols-outlined" {% if ns == 'products' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>inventory_2</span>
+      <span class="font-body-md text-body-md {% if ns == 'products' %}font-semibold{% endif %}">Products</span>
+    </a>
+
+    {% comment %} In/Out (mouvements de stock) {% endcomment %}
+    <a href="{% url 'inventory:index' %}"
+       class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer
+              {% if ns == 'inventory' %}border-l-4 border-secondary text-on-primary bg-primary/10 rounded-r-DEFAULT{% else %}text-on-primary-fixed-variant opacity-80 hover:bg-primary/20 hover:opacity-100 rounded-DEFAULT{% endif %}">
+      <span class="material-symbols-outlined" {% if ns == 'inventory' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>swap_horiz</span>
+      <span class="font-body-md text-body-md {% if ns == 'inventory' %}font-semibold{% endif %}">In/Out</span>
+    </a>
+
+    {% comment %} Sales {% endcomment %}
+    <a href="{% url 'sales:index' %}"
+       class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer
+              {% if ns == 'sales' %}border-l-4 border-secondary text-on-primary bg-primary/10 rounded-r-DEFAULT{% else %}text-on-primary-fixed-variant opacity-80 hover:bg-primary/20 hover:opacity-100 rounded-DEFAULT{% endif %}">
+      <span class="material-symbols-outlined" {% if ns == 'sales' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>payments</span>
+      <span class="font-body-md text-body-md {% if ns == 'sales' %}font-semibold{% endif %}">Sales</span>
+    </a>
+
+    {% comment %} Categories — onglet "Catégories" de la page Fournisseurs & Catégories {% endcomment %}
+    <a href="{% url 'suppliers:index' %}?tab=categories"
+       class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer
+              {% if ns == 'suppliers' and request.GET.tab == 'categories' %}border-l-4 border-secondary text-on-primary bg-primary/10 rounded-r-DEFAULT{% else %}text-on-primary-fixed-variant opacity-80 hover:bg-primary/20 hover:opacity-100 rounded-DEFAULT{% endif %}">
+      <span class="material-symbols-outlined" {% if ns == 'suppliers' and request.GET.tab == 'categories' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>category</span>
+      <span class="font-body-md text-body-md {% if ns == 'suppliers' and request.GET.tab == 'categories' %}font-semibold{% endif %}">Categories</span>
+    </a>
+
+    {% comment %} Suppliers — onglet par défaut de la même page {% endcomment %}
+    <a href="{% url 'suppliers:index' %}"
+       class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer
+              {% if ns == 'suppliers' and request.GET.tab != 'categories' %}border-l-4 border-secondary text-on-primary bg-primary/10 rounded-r-DEFAULT{% else %}text-on-primary-fixed-variant opacity-80 hover:bg-primary/20 hover:opacity-100 rounded-DEFAULT{% endif %}">
+      <span class="material-symbols-outlined" {% if ns == 'suppliers' and request.GET.tab != 'categories' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>local_shipping</span>
+      <span class="font-body-md text-body-md {% if ns == 'suppliers' and request.GET.tab != 'categories' %}font-semibold{% endif %}">Suppliers</span>
+    </a>
+
+    {% comment %} Users {% endcomment %}
+    <a href="{% url 'accounts:user_list' %}"
+       class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer
+              {% if ns == 'accounts' %}border-l-4 border-secondary text-on-primary bg-primary/10 rounded-r-DEFAULT{% else %}text-on-primary-fixed-variant opacity-80 hover:bg-primary/20 hover:opacity-100 rounded-DEFAULT{% endif %}">
+      <span class="material-symbols-outlined" {% if ns == 'accounts' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>group</span>
+      <span class="font-body-md text-body-md {% if ns == 'accounts' %}font-semibold{% endif %}">Users</span>
+    </a>
+
+    {% comment %} Reports {% endcomment %}
+    <a href="{% url 'reports:index' %}"
+       class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer
+              {% if ns == 'reports' %}border-l-4 border-secondary text-on-primary bg-primary/10 rounded-r-DEFAULT{% else %}text-on-primary-fixed-variant opacity-80 hover:bg-primary/20 hover:opacity-100 rounded-DEFAULT{% endif %}">
+      <span class="material-symbols-outlined" {% if ns == 'reports' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>assessment</span>
+      <span class="font-body-md text-body-md {% if ns == 'reports' %}font-semibold{% endif %}">Reports</span>
+    </a>
+
+    {% comment %} History {% endcomment %}
+    <a href="{% url 'audit:index' %}"
+       class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer
+              {% if ns == 'audit' %}border-l-4 border-secondary text-on-primary bg-primary/10 rounded-r-DEFAULT{% else %}text-on-primary-fixed-variant opacity-80 hover:bg-primary/20 hover:opacity-100 rounded-DEFAULT{% endif %}">
+      <span class="material-symbols-outlined" {% if ns == 'audit' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>history</span>
+      <span class="font-body-md text-body-md {% if ns == 'audit' %}font-semibold{% endif %}">History</span>
+    </a>
+
+    {% comment %} Settings — collé en bas via mt-auto, comme dans la maquette {% endcomment %}
+    <a href="{% url 'settings_app:index' %}"
+       class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer mt-auto
+              {% if ns == 'settings_app' %}border-l-4 border-secondary text-on-primary bg-primary/10 rounded-r-DEFAULT{% else %}text-on-primary-fixed-variant opacity-80 hover:bg-primary/20 hover:opacity-100 rounded-DEFAULT{% endif %}">
+      <span class="material-symbols-outlined" {% if ns == 'settings_app' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>settings</span>
+      <span class="font-body-md text-body-md {% if ns == 'settings_app' %}font-semibold{% endif %}">Settings</span>
+    </a>
+
+    {% endwith %}
+  </nav>
+</aside>
+
+<script>
+  window.openSidebar = function () {
+    document.getElementById('mobile-sidebar').classList.remove('-translate-x-full');
+    document.getElementById('sidebar-backdrop').classList.remove('hidden');
+  };
+  window.closeSidebar = function () {
+    document.getElementById('mobile-sidebar').classList.add('-translate-x-full');
+    document.getElementById('sidebar-backdrop').classList.add('hidden');
+  };
+</script>

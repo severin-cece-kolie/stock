@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Paramètres{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+  <h1 class="font-h1 text-h1 text-on-background mb-1">Paramètres</h1>
+  <p class="font-body-lg text-body-lg text-on-surface-variant">Configurez votre entreprise et votre compte.</p>
+</div>
+
+<div class="flex gap-2 mb-6">
+  <a href="?tab=company" class="px-4 py-2 rounded-lg font-body-sm text-body-sm font-medium transition-colors {% if tab != 'security' and tab != 'backup' %}bg-secondary text-on-secondary{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low{% endif %}">Entreprise</a>
+  <a href="?tab=security" class="px-4 py-2 rounded-lg font-body-sm text-body-sm font-medium transition-colors {% if tab == 'security' %}bg-secondary text-on-secondary{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low{% endif %}">Sécurité</a>
+  {% if can_manage %}
+  <a href="?tab=backup" class="px-4 py-2 rounded-lg font-body-sm text-body-sm font-medium transition-colors {% if tab == 'backup' %}bg-secondary text-on-secondary{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low{% endif %}">Sauvegarde</a>
+  {% endif %}
+</div>
+
+{% if tab == 'security' %}
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 max-w-lg">
+  <h3 class="font-h3 text-h3 mb-4">Changer mon mot de passe</h3>
+  <form method="post" class="flex flex-col gap-4">
+    {% csrf_token %}
+    <input type="hidden" name="section" value="password"/>
+    <div class="flex flex-col gap-1">
+      <label class="font-label-caps text-label-caps text-on-surface-variant">Mot de passe actuel</label>
+      {{ password_form.current_password }}
+      {% for error in password_form.current_password.errors %}<p class="text-error text-body-sm">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="font-label-caps text-label-caps text-on-surface-variant">Nouveau mot de passe</label>
+      {{ password_form.new_password1 }}
+      {% for error in password_form.new_password1.errors %}<p class="text-error text-body-sm">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="font-label-caps text-label-caps text-on-surface-variant">Confirmer le nouveau mot de passe</label>
+      {{ password_form.new_password2 }}
+      {% for error in password_form.new_password2.errors %}<p class="text-error text-body-sm">{{ error }}</p>{% endfor %}
+    </div>
+    <button type="submit" class="px-5 py-2.5 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary/90 transition-colors self-start">Mettre à jour le mot de passe</button>
+  </form>
+</div>
+
+{% elif tab == 'backup' and can_manage %}
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 max-w-lg">
+  <h3 class="font-h3 text-h3 mb-2">Sauvegarde locale</h3>
+  <p class="text-on-surface-variant text-body-sm mb-4">Téléchargez une copie complète des données de l'application (produits, stock, ventes, utilisateurs...) au format JSON.</p>
+  <a href="{% url 'settings_app:backup_download' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary/90 transition-colors">
+    <span class="material-symbols-outlined text-[20px]">backup</span> Télécharger la sauvegarde
+  </a>
+</div>
+
+{% else %}
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 max-w-2xl">
+  <h3 class="font-h3 text-h3 mb-4">Informations de l'entreprise</h3>
+  {% if can_manage %}
+  <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% csrf_token %}
+    <input type="hidden" name="section" value="company"/>
+    <div class="flex flex-col gap-1 md:col-span-2">
+      <label class="font-label-caps text-label-caps text-on-surface-variant">Nom de l'entreprise</label>
+      {{ company_form.name }}
+    </div>
+    <div class="flex flex-col gap-1 md:col-span-2">
+      <label class="font-label-caps text-label-caps text-on-surface-variant">Logo</label>
+      {{ company_form.logo }}
+      {% if company.logo %}<img src="{{ company.logo.url }}" class="mt-2 h-16" alt="Logo actuel">{% endif %}
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="font-label-caps text-label-caps text-on-surface-variant">Téléphone</label>
+      {{ company_form.phone }}
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="font-label-caps text-label-caps text-on-surface-variant">Email</label>
+      {{ company_form.email }}
+    </div>
+    <div class="flex flex-col gap-1 md:col-span-2">
+      <label class="font-label-caps text-label-caps text-on-surface-variant">Adresse</label>
+      {{ company_form.address }}
+    </div>
+    <div class="flex flex-col gap-1">
+      <label class="font-label-caps text-label-caps text-on-surface-variant">Devise</label>
+      {{ company_form.currency }}
+    </div>
+    <div class="md:col-span-2">
+      <button type="submit" class="px-5 py-2.5 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary/90 transition-colors">Enregistrer</button>
+    </div>
+  </form>
+  {% else %}
+  <p class="text-on-surface-variant text-body-sm">Seul un administrateur peut modifier les informations de l'entreprise.</p>
+  <dl class="mt-4 space-y-2 text-body-sm">
+    <div><dt class="text-on-surface-variant inline">Nom : </dt><dd class="inline font-medium">{{ company.name }}</dd></div>
+    <div><dt class="text-on-surface-variant inline">Devise : </dt><dd class="inline font-medium">{{ company.currency }}</dd></div>
+  </dl>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

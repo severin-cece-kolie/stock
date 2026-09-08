@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-[1100px] mx-auto">
+  <div class="flex justify-between items-start mb-8">
+    <div>
+      <a href="{% url 'products:index' %}" class="text-body-sm text-secondary hover:underline flex items-center gap-1 mb-2">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span> Retour aux produits
+      </a>
+      <h1 class="font-h1 text-h1 text-on-background mb-1">{{ product.name }}</h1>
+      <p class="font-data-mono text-data-mono text-on-surface-variant">{{ product.reference }}{% if product.barcode %} · {{ product.barcode }}{% endif %}</p>
+    </div>
+    {% if can_manage %}
+    <a href="{% url 'products:update' product.pk %}" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-sm">
+      <span class="material-symbols-outlined text-lg">edit</span> Modifier
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- KPI rapides -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
+      <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Stock actuel</p>
+      <p class="font-h2 text-h2 {% if product.is_out_of_stock or product.is_low_stock %}text-error{% endif %}">{{ product.stock_quantity }}</p>
+    </div>
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
+      <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Seuil minimum</p>
+      <p class="font-h2 text-h2">{{ product.minimum_stock }}</p>
+    </div>
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
+      <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Prix de vente</p>
+      <p class="font-h2 text-h2">{{ product.selling_price|floatformat:0 }} {{ company_currency }}</p>
+    </div>
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
+      <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Valeur du stock</p>
+      <p class="font-h2 text-h2">{{ product.stock_value|floatformat:0 }} {{ company_currency }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+      <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Catégorie</p>
+      <p class="font-body-md text-body-md">{{ product.category.name|default:"—" }}</p>
+    </div>
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+      <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Fournisseur</p>
+      <p class="font-body-md text-body-md">{{ product.supplier.name|default:"—" }}</p>
+    </div>
+  </div>
+
+  {% if product.description %}
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 mb-8">
+    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Description</p>
+    <p class="font-body-md text-body-md text-on-surface-variant">{{ product.description }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Historique des mouvements -->
+  <h3 class="font-h3 text-h3 text-on-background mb-3">Entrées récentes</h3>
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden mb-8">
+    <table class="w-full text-left border-collapse text-body-sm">
+      <thead>
+        <tr class="bg-surface-container-low"><th class="px-4 py-2 font-label-caps text-label-caps uppercase">Date</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase">Fournisseur</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase text-right">Quantité</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase">Utilisateur</th></tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/50">
+        {% for entry in entries %}
+        <tr><td class="px-4 py-2">{{ entry.date }}</td><td class="px-4 py-2">{{ entry.supplier|default:"—" }}</td><td class="px-4 py-2 text-right font-data-mono text-data-mono text-on-tertiary-container">+{{ entry.quantity }}</td><td class="px-4 py-2">{{ entry.user }}</td></tr>
+        {% empty %}
+        <tr><td colspan="4" class="px-4 py-6 text-center text-on-surface-variant">Aucune entrée enregistrée.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="font-h3 text-h3 text-on-background mb-3">Sorties récentes</h3>
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden mb-8">
+    <table class="w-full text-left border-collapse text-body-sm">
+      <thead>
+        <tr class="bg-surface-container-low"><th class="px-4 py-2 font-label-caps text-label-caps uppercase">Date</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase">Motif</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase text-right">Quantité</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase">Utilisateur</th></tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/50">
+        {% for output in outputs %}
+        <tr><td class="px-4 py-2">{{ output.date }}</td><td class="px-4 py-2">{{ output.get_reason_display }}</td><td class="px-4 py-2 text-right font-data-mono text-data-mono text-error">-{{ output.quantity }}</td><td class="px-4 py-2">{{ output.user }}</td></tr>
+        {% empty %}
+        <tr><td colspan="4" class="px-4 py-6 text-center text-on-surface-variant">Aucune sortie enregistrée.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="font-h3 text-h3 text-on-background mb-3">Ventes récentes</h3>
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+    <table class="w-full text-left border-collapse text-body-sm">
+      <thead>
+        <tr class="bg-surface-container-low"><th class="px-4 py-2 font-label-caps text-label-caps uppercase">Vente</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase">Date</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase text-right">Quantité</th><th class="px-4 py-2 font-label-caps text-label-caps uppercase text-right">Sous-total</th></tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/50">
+        {% for item in sale_items %}
+        <tr><td class="px-4 py-2">{{ item.sale.reference }}</td><td class="px-4 py-2">{{ item.sale.date|date:"d/m/Y" }}</td><td class="px-4 py-2 text-right font-data-mono text-data-mono">{{ item.quantity }}</td><td class="px-4 py-2 text-right font-data-mono text-data-mono">{{ item.subtotal|floatformat:0 }} {{ company_currency }}</td></tr>
+        {% empty %}
+        <tr><td colspan="4" class="px-4 py-6 text-center text-on-surface-variant">Aucune vente enregistrée.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

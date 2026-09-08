@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Utilisateurs & Permissions{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h2 class="font-h1 text-h1 text-on-surface">Configuration des Utilisateurs et Permissions</h2>
+    <p class="text-on-surface-variant text-body-sm mt-1">Gérez les comptes et les niveaux d'accès de votre équipe.</p>
+  </div>
+  <button onclick="document.getElementById('add-panel').classList.toggle('hidden')" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-sm">
+    <span class="material-symbols-outlined text-lg">person_add</span> Ajouter un utilisateur
+  </button>
+</div>
+
+<div id="add-panel" class="hidden mb-6 bg-surface-container-lowest border border-outline-variant rounded-lg p-5">
+  <form method="post" action="{% url 'accounts:user_create' %}" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+    {% csrf_token %}
+    <div class="flex flex-col gap-1"><label class="font-label-caps text-label-caps text-on-surface-variant">Nom d'utilisateur</label>{{ form.username }}</div>
+    <div class="flex flex-col gap-1"><label class="font-label-caps text-label-caps text-on-surface-variant">Prénom</label>{{ form.first_name }}</div>
+    <div class="flex flex-col gap-1"><label class="font-label-caps text-label-caps text-on-surface-variant">Nom</label>{{ form.last_name }}</div>
+    <div class="flex flex-col gap-1"><label class="font-label-caps text-label-caps text-on-surface-variant">Email</label>{{ form.email }}</div>
+    <div class="flex flex-col gap-1"><label class="font-label-caps text-label-caps text-on-surface-variant">Téléphone</label>{{ form.phone }}</div>
+    <div class="flex flex-col gap-1"><label class="font-label-caps text-label-caps text-on-surface-variant">Rôle</label>{{ form.role }}</div>
+    <div class="flex flex-col gap-1"><label class="font-label-caps text-label-caps text-on-surface-variant">Mot de passe</label>{{ form.password1 }}</div>
+    <div class="flex flex-col gap-1"><label class="font-label-caps text-label-caps text-on-surface-variant">Confirmation</label>{{ form.password2 }}</div>
+    <div class="flex items-end">
+      <button type="submit" class="px-5 py-2.5 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary/90 transition-colors w-full">Créer le compte</button>
+    </div>
+  </form>
+</div>
+
+<form method="get" class="mb-4 max-w-sm relative">
+  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+  <input name="q" value="{{ query }}" class="w-full pl-9 pr-3 py-2 bg-surface border border-outline-variant rounded text-sm focus:border-secondary focus:ring-1 focus:ring-secondary transition-all" placeholder="Rechercher un utilisateur..." type="text"/>
+</form>
+
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+  <table class="w-full text-left border-collapse">
+    <thead>
+      <tr class="bg-surface-container-low">
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Nom</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Email</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Rôle</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase">Dernière connexion</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase text-center">Statut</th>
+        <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant uppercase text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="text-body-sm divide-y divide-[#E2E8F0]">
+      {% for u in users %}
+      <tr class="hover:bg-secondary-fixed/40 transition-colors">
+        <td class="px-6 py-2 font-medium flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-on-secondary text-xs font-bold">
+            {{ u.get_full_name|default:u.username|slice:":1"|upper }}
+          </div>
+          {{ u.get_full_name|default:u.username }}
+        </td>
+        <td class="px-6 py-2 text-on-surface-variant">{{ u.email|default:"—" }}</td>
+        <td class="px-6 py-2">
+          <span class="text-xs font-medium bg-surface-container-highest px-2 py-1 rounded-full text-on-surface">{{ u.get_role_display }}</span>
+        </td>
+        <td class="px-6 py-2 text-on-surface-variant font-data-mono text-xs">{{ u.last_login|date:"d/m/Y H:i"|default:"Jamais" }}</td>
+        <td class="px-6 py-2 text-center">
+          {% if u.is_active %}
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#ecfdf5] text-[#065f46]">Actif</span>
+          {% else %}
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#fef2f2] text-[#991b1b]">Désactivé</span>
+          {% endif %}
+        </td>
+        <td class="px-6 py-2 text-right">
+          <div class="flex items-center justify-end gap-1">
+            <a href="{% url 'accounts:user_update' u.pk %}" class="p-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary/10 rounded transition-colors inline-block" title="Modifier">
+              <span class="material-symbols-outlined text-[18px]">edit</span>
+            </a>
+            <form method="post" action="{% url 'accounts:user_toggle_active' u.pk %}" class="inline" onsubmit="return confirm('Confirmer le changement de statut ?');">
+              {% csrf_token %}
+              <button class="p-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary/10 rounded transition-colors" title="{% if u.is_active %}Désactiver{% else %}Activer{% endif %}">
+                <span class="material-symbols-outlined text-[18px]">{% if u.is_active %}toggle_on{% else %}toggle_off{% endif %}</span>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="px-6 py-10 text-center text-on-surface-variant">Aucun utilisateur trouvé.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

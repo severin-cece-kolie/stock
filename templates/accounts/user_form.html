@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier {{ user_obj.username }}{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+  <a href="{% url 'accounts:user_list' %}" class="text-body-sm text-secondary hover:underline flex items-center gap-1 mb-4">
+    <span class="material-symbols-outlined text-[18px]">arrow_back</span> Retour aux utilisateurs
+  </a>
+
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
+    <h1 class="font-h2 text-h2 text-on-background mb-6">Modifier {{ user_obj.username }}</h1>
+    <form method="post" class="flex flex-col gap-4">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="font-label-caps text-label-caps text-on-surface-variant">Prénom</label>
+          {{ form.first_name }}
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="font-label-caps text-label-caps text-on-surface-variant">Nom</label>
+          {{ form.last_name }}
+        </div>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="font-label-caps text-label-caps text-on-surface-variant">Email</label>
+        {{ form.email }}
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="font-label-caps text-label-caps text-on-surface-variant">Téléphone</label>
+        {{ form.phone }}
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="font-label-caps text-label-caps text-on-surface-variant">Rôle</label>
+        {{ form.role }}
+      </div>
+      <div class="flex items-center gap-2">
+        {{ form.is_active }}
+        <label class="font-body-sm text-body-sm text-on-surface-variant">Compte actif</label>
+      </div>
+      <button type="submit" class="px-5 py-2.5 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary/90 transition-colors self-start mt-2">
+        Enregistrer les modifications
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
