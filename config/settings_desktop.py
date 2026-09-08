@@ -43,7 +43,7 @@ else:
     SECRET_KEY_FILE.write_text(SECRET_KEY, encoding='utf-8')
 
 DEBUG = False
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['.onrender.com', 'stock-fi3c.onrender.com']
 
 # --------------------------------------------------------------------
 # Base de données : SQLite autonome
